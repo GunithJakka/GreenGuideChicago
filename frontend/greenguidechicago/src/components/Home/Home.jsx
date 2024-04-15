@@ -135,8 +135,8 @@ const App = () => {
         const newMarkers = [
           ...markers,
           { latitude: data.location.latitude, longitude: data.location.longitude },
-          ...data.eventDivvys.map(divvy => ({ latitude: divvy.latitude, longitude: divvy.longitude })),
-          ...data.eventplaces.map(place => ({ latitude: place.latitude, longitude: place.longitude }))
+          ...data.eventDivvys.map(divvy => ({ latitude: divvy.latitude, longitude: divvy.longitude, color:"blue" })),
+          ...data.eventplaces.map(place => ({ latitude: place.latitude, longitude: place.longitude, color:"red" }))
         ];
         setMarkers(newMarkers);
 
@@ -188,6 +188,7 @@ const App = () => {
                                 {markers.map((marker, index) => (
                                     <Marker
                                     key={index}
+                                    color = {marker.color}
                                     position={{ lat: marker.latitude, lng: marker.longitude }}
                                 />
                                 ))}

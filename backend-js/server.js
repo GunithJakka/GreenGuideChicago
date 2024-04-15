@@ -9,6 +9,9 @@ var ipapi = require('ipapi.co');
 require('dotenv').config();
 
 // Now you can access your environment variables using process.env
+const googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY;
+const openaiApiKey = process.env.OPENAI_API_KEY;
+// Now you can access your environment variables using process.env
 
 
 app.listen(8000, function () {
