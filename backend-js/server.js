@@ -5,14 +5,19 @@ const cors = require('cors');
 app.use(cors());
 app.use(express.json());
 var ipapi = require('ipapi.co');
+
+require('dotenv').config();
+
+// Now you can access your environment variables using process.env
+
+
 app.listen(8000, function () {
     console.log("Server started on port 8000");
 });
 const axios = require('axios');
 
 async function getLocationFromCoordinates(latitude, longitude) {
-    const apiKey = 'AIzaSyAF545AIRMTK0DF-7klMhkfp9RuHTIatQg';
-    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}`;
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${process.env.GOOGLE_MAPS_API_KEY}`;
 
     try {
         const response = await axios.get(url);
@@ -29,9 +34,8 @@ async function getLocationFromCoordinates(latitude, longitude) {
 }
 
 async function getLocationCoordinates(location) {
-    const apiKey = 'AIzaSyAF545AIRMTK0DF-7klMhkfp9RuHTIatQg';
     const encodedLocation = encodeURIComponent(location);
-    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodedLocation}&key=${apiKey}`;
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodedLocation}&key=${process.env.GOOGLE_MAPS_API_KEY}`;
   
     try {
       const response = await axios.get(url);
@@ -49,7 +53,7 @@ async function getLocationCoordinates(location) {
   }
 
 
-const openai = new OpenAI({ apiKey: "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" });
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 async function getLocation() {
     return new Promise((resolve, reject) => {
