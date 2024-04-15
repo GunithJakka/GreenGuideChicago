@@ -37,9 +37,9 @@
 
 - **OraHacks Winner:**  The SightCycleECO.ai project emerged victorious at OraHacks hackathon. The project stood out among 200 competitors, showcasing exceptional innovation and creativity.
 - 
-## ![Demo GIF]
+![Demo GIF]
 (https://raw.githubusercontent.com/GunithJakka/SightCycleECO.ai/main/images/itinerary.gif)
-
+(https://raw.githubusercontent.com/GunithJakka/SightCycleECO.ai/main/images/mapgif.gif)
 ## Contributors
 
 -Gunith Jakka
