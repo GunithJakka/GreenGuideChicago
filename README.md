@@ -33,6 +33,10 @@
 4. Start the frontend and backend servers using `npm start` for both.
 5. Access the application via the provided URL.
 
+## Achievements
+
+- **OraHacks Winner:**  The SightCycleECO.ai project emerged victorious at OraHacks hackathon. The project stood out among 200 competitors, showcasing exceptional innovation and creativity.
+
 ## Contributors
 
 -Gunith Jakka
