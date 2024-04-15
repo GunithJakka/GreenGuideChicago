@@ -83,9 +83,18 @@ const Home = () => {
     }, [activeView]);
 
     useEffect(() => {
+        if (activeView === 'map') {
+            pointCoordinates();
+        }
+    }, [activeView]);
+
+    useEffect(() => {
         if (itinerary) {
+            // Initialize typingEffectText with the first character of the itinerary
+            setTypingEffectText(itinerary[0]);
+    
             // Simulate typing effect
-            let index = 0;
+            let index = 1; // Start from index 1
             const typingInterval = setInterval(() => {
                 setTypingEffectText(prevText => prevText + itinerary[index]);
                 index++;
@@ -115,34 +124,42 @@ const Home = () => {
         }
     };
 
-    const pointCoordinates = () => {
-        fetch('http://localhost:8000/getCoordinates')
-            .then(response => response.json())
-            .then(data => {
-                const newMarkers = data.map(spot => {
-                    const { lat, lng, type } = spot;
-                    let color;
-                    switch (type) {
-                        case 'divvySpots':
-                            color = 'blue';
-                            break;
-                        case 'hotSpots':
-                            color = 'red';
-                            break;
-                        case 'userLocation':
-                            color = 'black';
-                            break;
-                        default:
-                            color = 'black';
-                    }
-                    return { lat, lng, color };
+    const pointCoordinates = async () => {
+        try {
+            const response = await fetch('http://localhost:8000/getCoordinates');
+            const data = await response.json();
+    
+            const newMarkers = [];
+    
+            // Parse eventDivvys
+            if (data.eventDivvys && data.eventDivvys.length > 0) {
+                data.eventDivvys.forEach(spot => {
+                    const { latitude, longitude } = spot;
+                    newMarkers.push({ lat: latitude, lng: longitude, color: 'blue' });
                 });
-                setMarkers(newMarkers);
-            })
-            .catch(error => {
-                console.error('Error fetching coordinates:', error);
-            });
+            }
+    
+            // Parse eventplaces
+            if (data.eventplaces && data.eventplaces.length > 0) {
+                data.eventplaces.forEach(spot => {
+                    const { latitude, longitude } = spot;
+                    newMarkers.push({ lat: latitude, lng: longitude, color: 'red' });
+                });
+            }
+    
+            // Parse userNearestDivvy
+            if (data.userNearestDivvy) {
+                const { latitude, longitude } = data.userNearestDivvy;
+                newMarkers.push({ lat: latitude, lng: longitude, color: 'black' });
+            }
+    
+            setMarkers(newMarkers);
+        } catch (error) {
+            console.error('Error fetching coordinates:', error);
+        }
     };
+    
+    
 
     const toggleView = (view) => {
         setActiveView(view);
@@ -163,9 +180,9 @@ const Home = () => {
 
                 {activeView === 'itinerary' && (
                     <ResponseData>
-                        <h2>Today's Itinerary:</h2>
-                        <pre>{typingEffectText}</pre>
-                    </ResponseData>
+                    <h2>Today's Itinerary:</h2>
+                    <pre style={{ wordWrap: 'break-word' }}>{typingEffectText}</pre> {/* Set word-wrap style */}
+                </ResponseData>
                 )}
 
                 {activeView === 'map' && (
