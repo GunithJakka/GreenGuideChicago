@@ -70,12 +70,15 @@ const mapStyles = {
     width: '100%',
 };
 
-const Home = () => {
+const App = () => {
+  
     const [activeView, setActiveView] = useState('itinerary');
     const [itinerary, setItinerary] = useState('');
     const [markers, setMarkers] = useState([]);
     const [typingEffectText, setTypingEffectText] = useState('');
-
+    useEffect(() => {
+      console.log(markers);
+    }, [markers]);
     useEffect(() => {
         if (activeView === 'itinerary' && !itinerary) {
             fetchItinerary();
@@ -83,83 +86,72 @@ const Home = () => {
     }, [activeView]);
 
     useEffect(() => {
-        if (activeView === 'map') {
-            pointCoordinates();
-        }
-    }, [activeView]);
+      if (itinerary) {
+          // Initialize typingEffectText with the first character of the itinerary
+          setTypingEffectText(itinerary[0]);
+  
+          // Simulate typing effect
+          let index = 1; // Start from index 1
+          const typingInterval = setInterval(() => {
+              setTypingEffectText(prevText => prevText + itinerary[index]);
+              index++;
+              if (index === itinerary.length) {
+                  clearInterval(typingInterval);
+              }
+          }, 50); // Adjust typing speed here
+          return () => clearInterval(typingInterval);
+      }
+  }, [itinerary]);
 
-    useEffect(() => {
-        if (itinerary) {
-            // Initialize typingEffectText with the first character of the itinerary
-            setTypingEffectText(itinerary[0]);
-    
-            // Simulate typing effect
-            let index = 1; // Start from index 1
-            const typingInterval = setInterval(() => {
-                setTypingEffectText(prevText => prevText + itinerary[index]);
-                index++;
-                if (index === itinerary.length) {
-                    clearInterval(typingInterval);
-                }
-            }, 50); // Adjust typing speed here
-            return () => clearInterval(typingInterval);
-        }
-    }, [itinerary]);
-
-    const fetchItinerary = async () => {
+    const fetchItinerary = async (e) => {
         try {
-            const response = await fetch('http://localhost:8000/getData', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    // Add any data you want to send in the request body
-                }),
-            });
-            const data = await response.json();
-            setItinerary(data.itinerary);
+          const response = await fetch('http://localhost:8000/getData', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              // Add any data you want to send in the request body
+            }),
+          });
+          const data = await response.json();
+          setItinerary(data.itinerary);
         } catch (error) {
-            console.error('Failed to fetch itinerary:', error);
+          console.error('Failed to fetch itinerary:', error);
         }
-    };
+      };
 
-    const pointCoordinates = async () => {
-        try {
-            const response = await fetch('http://localhost:8000/getCoordinates');
-            const data = await response.json();
-    
-            const newMarkers = [];
-    
-            // Parse eventDivvys
-            if (data.eventDivvys && data.eventDivvys.length > 0) {
-                data.eventDivvys.forEach(spot => {
-                    const { latitude, longitude } = spot;
-                    newMarkers.push({ lat: latitude, lng: longitude, color: 'blue' });
-                });
-            }
-    
-            // Parse eventplaces
-            if (data.eventplaces && data.eventplaces.length > 0) {
-                data.eventplaces.forEach(spot => {
-                    const { latitude, longitude } = spot;
-                    newMarkers.push({ lat: latitude, lng: longitude, color: 'red' });
-                });
-            }
-    
-            // Parse userNearestDivvy
-            if (data.userNearestDivvy) {
-                const { latitude, longitude } = data.userNearestDivvy;
-                newMarkers.push({ lat: latitude, lng: longitude, color: 'black' });
-            }
-    
-            setMarkers(newMarkers);
-        } catch (error) {
-            console.error('Error fetching coordinates:', error);
-        }
+    const pointCoordinates = async() => {
+      toggleView('map')
+        const response=await fetch("http://localhost:8000/getCoordinates",{
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+
+        const data = await response.json();
+        // console.log(data.location.latitude+" "+data.location.longitude);
+        const newMarkers = [
+          ...markers,
+          { latitude: data.location.latitude, longitude: data.location.longitude },
+          ...data.eventDivvys.map(divvy => ({ latitude: divvy.latitude, longitude: divvy.longitude })),
+          ...data.eventplaces.map(place => ({ latitude: place.latitude, longitude: place.longitude }))
+        ];
+        setMarkers(newMarkers);
+
+        // setMarkers([...markers, { latitude: data.location.latitude, longitude: data.location.longitude }]);
+        // for(var i=0;i<data.eventDivvys.length;i++){
+        //   setMarkers([...markers, { latitude: data.eventDivvys[i].latitude, longitude: data.eventDivvys[i].longitude }]);
+        // }
+
+
+        // for(var i=0;i<data.eventplaces.length;i++){
+        //   console.log(data.eventplaces[i]);
+        //   setMarkers([...markers, { latitude: data.eventplaces[i].latitude, longitude: data.eventplaces[i].longitude }]);
+        // }
+        // console.log(data)
     };
-    
-    
 
     const toggleView = (view) => {
         setActiveView(view);
@@ -175,13 +167,13 @@ const Home = () => {
             <Main>
                 <Buttons>
                     <Button active={activeView === 'itinerary'} onClick={() => toggleView('itinerary')}>Itinerary</Button>
-                    <Button active={activeView === 'map'} onClick={() => toggleView('map')}>Map View</Button>
+                    <Button active={activeView === 'map'} onClick={pointCoordinates}>Map View</Button>
                 </Buttons>
 
-                {activeView === 'itinerary' && (
+                {activeView === 'itinerary' && itinerary && (
                     <ResponseData>
                     <h2>Today's Itinerary:</h2>
-                    <pre style={{ wordWrap: 'break-word' }}>{typingEffectText}</pre> {/* Set word-wrap style */}
+                    <pre style={{ wordWrap: 'break-word' }}>{typingEffectText}</pre>
                 </ResponseData>
                 )}
 
@@ -195,9 +187,9 @@ const Home = () => {
                             >
                                 {markers.map((marker, index) => (
                                     <Marker
-                                        key={index}
-                                        position={{ lat: marker.lat, lng: marker.lng }}
-                                    />
+                                    key={index}
+                                    position={{ lat: marker.latitude, lng: marker.longitude }}
+                                />
                                 ))}
                             </GoogleMap>
                         </LoadScript>
@@ -212,4 +204,4 @@ const Home = () => {
     );
 };
 
-export default Home;
+export default App;
